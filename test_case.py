@@ -10,28 +10,6 @@ import psycopg2
 from config import *
 
 
-# Создаем обьект класса SheetsFile передаем в него ключ от сервисного аккаунта и id самой таблицы.
-# Если таблицы нет то передаем только ключ, после чего запускаем метод create_table() у созданного обьекта класса.
-# Имеет атрибуты:
-# name_table: str, - название создаваемой таблицы
-# your_email: str, - почта аккаунта к которому будет открыт доступ к таблице
-# rowCount: int=100, - число строк
-# columnCount: int=15 - число колонок
-# Дальше если хотим получить данные вызываем метод get_data_table(cell_range: str, sheets: str = 'Лист1', majorDimension: str ='ROWS')
-# Для получения данных имеет атрибуты:
-# cell_range: диапазон передаеться в виде строки 'E5:E10'
-# sheets: с какого листа берем данные по умолчанию в значении 'Лист1' передаеться в виде строки
-# majorDimension: как возвращаем данные построчно (значение 'ROWS') или по столбцам (значение "COLUMNS").
-# По умолчанию 'ROWS', передаеться в виде строки
-# Дальше если хотим записать данные вызываем метод set_data_table_renge(self, data_list: list):
-# data_list = [
-#                     {"range": "B3:C4",
-#                      "majorDimension": "ROWS",
-#                      "values": [["This is B3", "This is C3"], ["This is B4", "This is C4"]]},
-#                     {"range": "D5:E6",
-#                      "majorDimension": "COLUMNS",
-#                      "values": [["This is D5", "This is D6"], ["This is E5", "=5+5"]]}
-#             ]
 class SheetsFile:
 
     def __init__(self, credentials_file: str, spreadsheet_id: str):
@@ -60,16 +38,15 @@ class SheetsFile:
                                        'title': 'Лист номер один',
                                        'gridProperties': {'rowCount': f"{rowCount}", 'columnCount': f"{columnCount}"}}}]
         }).execute()
-        spreadsheet_id = spreadsheet['spreadsheetId']  # сохраняем идентификатор файла
+        spreadsheet_id = spreadsheet['spreadsheetId']
         self.SPREADSHEET_ID = spreadsheet_id
 
         httpAuth = self.create_httpAuth()
-        driveService = discovery.build('drive', 'v3', http=httpAuth)  # Выбираем работу с Google Drive и 3 версию API
+        driveService = discovery.build('drive', 'v3', http=httpAuth)
         driveService.permissions().create(
             fileId=self.SPREADSHEET_ID,
             body={'type': 'user', 'role': 'writer', 'emailAddress': f"{your_email}"},
-            # Открываем доступ на редактирование
-            fields='id'
+            fields='id'                                                 # Открываем доступ на редактирование
         ).execute()
         print('https://docs.google.com/spreadsheets/d/' + self.SPREADSHEET_ID)
 
@@ -108,16 +85,6 @@ class SheetsFile:
         row[3] = '-'.join(row_date)
         return tuple(row)
 
-
-# CREDENTIALS_FILE = 'my-project-kanalservice-a62e8270f0ca.json'
-# SPREADSHEET_ID = '1f-qZEX1k_3nj5cahOzntYAnvO4ignbyesVO7yuBdv_g'
-# a = SheetsFile(CREDENTIALS_FILE, SPREADSHEET_ID)
-# data_list = a.get_data_table('A1:F300', sheets='Лист1')
-# pprint(a.get_data_table('A1:F300', sheets='Лист1'))
-# a.set_data_table_renge(data_list)
-# # b = SheetsFile(CREDENTIALS_FILE, SPREADSHEET_ID)
-# # c = b.create_table('новая таблица', 'zverev1991lex@gmail.com')
-# a.set_data_table_renge(data_list)
 
 class DataBase:
 
@@ -263,11 +230,11 @@ class ScriptManager:
         self.CREDENTIALS_FILE = credentials_file            # Ссылка на json ключ от google sheets
         self.SPREADSHEET_ID = spreadsheet_id                # Ссылка на таблицу google sheets
         self.NAME_TABLE_DB = name_table_db                  # Имя создаваемой(имеющейся) таблицы в Базе данных
-        self.SELECT_RANGE = 'A1:F300'                       # Диапазон ячеек из таблицы google sheets откуда беруться значения
+        self.SELECT_RANGE = 'A1:F400'                       # Диапазон ячеек из таблицы google sheets откуда беруться значения
         self.sheets_object = SheetsFile(self.CREDENTIALS_FILE,
                                         self.SPREADSHEET_ID)  # Создаем обект через который будем работать с google sheets
         self.sheets_data_tuple = self.sheets_object.get_data_table(
-            self.SELECT_RANGE)                              # Запрашиваем данные из таблицы с ячеек A1:F300
+            self.SELECT_RANGE)                              # Запрашиваем данные из таблицы с ячеек A1:F400
         self.db_object = DataBase(self.NAME_TABLE_DB)       # Создаем объект через который будем работать с нашей БД
 
     def create_settings(self):
